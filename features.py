@@ -11,13 +11,18 @@ import os
 
 logger = file_log.get_logger(__name__)
 
+def file_decorator(func):
+    def wrapper(*args, **kwargs):
+        with shelve.open('tasks_details') as task:
+            func(*args, **kwargs, task_file=task)
+    return wrapper
+
 def is_correct_time(time_string):
     time_regex = re.compile(r'([01]\d|2[0-3]):[0-5]\d')
     if re.fullmatch(time_regex, time_string) is None:
         raise ValueError(f'{time_string} is not a proper time format.')
     time = datetime.datetime.strptime(time_string, '%H:%M').time()
     return time
-
 
 def split_apps(app_file):
     app_file_regex = re.compile(r'.+?\.exe')
@@ -34,26 +39,69 @@ def split_apps(app_file):
     return app_file_match
 
 
-'''Saves a new task.'''
-def save_task(task_name, start_time_string, end_time_string, apps):
-    # assert is_correct_time([start_time, end_time]) != False, 'Please enter the proper time format.'
-    try: 
-            start_time = is_correct_time(start_time_string)
-            end_time = is_correct_time(end_time_string)
-            if start_time >= end_time:
-                raise ValueError('Start time must be before end time.')
-            task_apps = split_apps(apps)
-            tasks_file = shelve.open('tasks')
-            tasks_file[task_name] = {
-                'start_time':start_time,
-                'end_time':end_time,
-                'apps':task_apps
-            }
-            tasks_file.close()
-            logger.info('Task saved successfully.')
-            sys.exit('Task saved successfully.')
-    except ValueError as e:
-            raise Exception(f'An error occurred while saving task: {e}')
+class Task():
+    def __init__(self, task_name):
+        '''Initialize the object with a task_name attribute.'''
+        self.task_name = task_name
+
+    @file_decorator
+    def save_task(self, start_time_string, end_time_string, apps, task_file=None):
+        '''Saves a new task.'''
+        # assert is_correct_time([start_time, end_time]) != False, 'Please enter the proper time format.'
+        self.start_time_string = start_time_string
+        self.end_time_string = end_time_string
+        self.apps = apps
+        try: 
+                start_time = is_correct_time(self.start_time_string)
+                end_time = is_correct_time(self.end_time_string)
+                if start_time >= end_time:
+                    raise ValueError('Start time must be before end time.')
+                task_apps = split_apps(self.apps)
+                # tasks_file = shelve.open('tasks')
+                task_file[self.task_name] = {
+                    'start_time':start_time,
+                    'end_time':end_time,
+                    'apps':task_apps
+                }
+                # task_file.close()
+                logger.info('Task saved successfully.')
+                sys.exit('Task saved successfully.')
+        except ValueError as e:
+                raise Exception(f'An error occurred while saving task: {e}')
+        
+    @file_decorator
+    def update_task(self, key, task_file=None):
+        '''Update the value of a particular task.'''
+        # task_file = shelve.open('tasks')
+        logger.info(f'Updating task "{self.task_name}"')
+        print(f'Updating task "{self.task_name}"')
+        try:
+            value = input(f'Enter {key}: ')
+            if key == 'apps':
+                app_value = split_apps(value)
+                task_file[self.task_name]['apps'] = task_file[self.task_name][key] + app_value
+            else:
+                time_value = is_correct_time(value.strip())
+                task_update = task_file.get(self.task_name, {})
+                task_update[key] = time_value
+                task_file[self.task_name] = task_update
+                if key == 'start_time':
+                    end_time = task_file[self.task_name]['end_time']
+                    if time_value > end_time:
+                        raise ValueError('Start time must be before end time.')
+                elif key == 'end_time':
+                    start_time = task_file[self.task_name]['start_time']
+                    if time_value < start_time:
+                        raise ValueError('End time must be before start time.')
+            task_file.sync()
+            logger.info(f'Task "{self.task_name}" updated successfully.')
+            sys.exit(f'Task "{self.task_name}" updated successfully.')
+        except KeyError:
+            raise Exception(f"An error occurred while updating task. Please check the spelling of your task name or it's keys.")
+        except ValueError as e:
+            raise Exception(f'An error occurred while updating task: {e}')
+        # finally:
+        #     task_file.close()
 
 
 '''Lists all the tasks in the database.'''
@@ -97,40 +145,6 @@ def close_task(task_processes):
     for task_process in task_processes:
         # os.kill(task_process, signal.SIGTERM)
         task_process.kill()
-
-
-'''Update the value of a particular task.'''
-def update_task(task_name, key):
-    task_file = shelve.open('tasks')
-    logger.info(f'Updating task "{task_name}"')
-    print(f'Updating task "{task_name}"')
-    try:
-        value = input(f'Enter {key}: ')
-        if key == 'apps':
-            app_value = split_apps(value)
-            task_file[task_name]['apps'] = task_file[task_name][key] + app_value
-        else:
-            time_value = is_correct_time(value.strip())
-            task_update = task_file.get(task_name, {})
-            task_update[key] = time_value
-            task_file[task_name] = task_update
-            if key == 'start_time':
-                end_time = task_file[task_name]['end_time']
-                if time_value > end_time:
-                    raise ValueError('Start time must be before end time.')
-            elif key == 'end_time':
-                start_time = task_file[task_name]['start_time']
-                if time_value < start_time:
-                    raise ValueError('End time must be before start time.')
-        task_file.sync()
-        logger.info(f'Task "{task_name}" updated successfully.')
-        sys.exit(f'Task "{task_name}" updated successfully.')
-    except KeyError:
-        raise Exception(f"An error occurred while updating task. Please check the spelling of your task name or it's keys.")
-    except ValueError as e:
-        raise Exception(f'An error occurred while updating task: {e}')
-    finally:
-        task_file.close()
     
 
 '''Delete a particular task.'''
