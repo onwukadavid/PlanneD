@@ -1,5 +1,5 @@
-tasks.bak
-tasks.dat
+*tasks*
+*tasks*
 *.log*
 *dir
 *pycache*
