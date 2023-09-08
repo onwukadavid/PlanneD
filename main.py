@@ -11,10 +11,13 @@ USAGE = '''
 import sys
 import file_log
 import features
+import shelve
 
 logger = file_log.get_logger(__name__)
 
 #TODO: find out if updating while running or stopped is better. Pick either of them.
+'''TODO: make changes if necessary to the delete_task, delete and list statements with respect
+        to the task class if necessary'''
 def main():
     try:
         if (len(sys.argv) < 2) or (len(sys.argv) > 4):
@@ -22,18 +25,28 @@ def main():
 
         if len(sys.argv) == 4:
             if sys.argv[1] == 'update':
+                '''get task object and update the necessary details.'''
                 task_name = sys.argv[2]
                 key = sys.argv[3]
-                features.update_task(task_name = task_name, key=key)
+                with shelve.open('tasks') as tasks:
+                    task = tasks[task_name]
+                task.update_task(key=key)
                 features.list_tasks()
+            print(f'Task "{task_name}" updated successfully.')
+            sys.exit()
 
         if len(sys.argv) == 3:
             if sys.argv[1] == 'save':
                 start_time = input('Enter start time (24hours) e.g 00:00: ')
                 end_time = input('Enter end time (24hours) e.g 00:00: ')
                 apps = input('Enter applications to open: ')
-                features.save_task(task_name=sys.argv[2].strip(), start_time_string=start_time, end_time_string=end_time, apps=apps)
-                features.list_tasks()
+                task_name = sys.argv[2].strip()
+                task = features.Task(task_name)
+                task.save_task(start_time_string=start_time, end_time_string=end_time, apps=apps)
+                with shelve.open('tasks') as tasks:
+                    tasks[task_name] = task
+                print('Task saved successfully.')
+                sys.exit()
             
             if sys.argv[1] == 'delete_task':
                 task_name = sys.argv[2]

@@ -14,6 +14,7 @@ logger = file_log.get_logger(__name__)
 TODO: rather than going through each task checking the time assign a time to all task
       and run it when the time reaches. FIX:  USE Classes and data structures(heap, queue, ordereddicts())
 '''
+'''TODO: make changes if necessary to the run_task.py file with respect to the task class if necessary'''
 
 def current_time():
     time_obj = datetime.datetime.now()
