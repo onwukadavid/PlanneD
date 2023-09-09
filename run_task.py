@@ -6,6 +6,7 @@ import time
 import file_log
 import features
 import sys
+from utils import file_decorator
 
 
 logger = file_log.get_logger(__name__)
@@ -23,7 +24,8 @@ def current_time():
     logger.debug(f'Current time: {new_time_obj.time()}')
     return new_time_obj.time()
 
-def run_task():
+@file_decorator
+def run_task(task_file=None):
     currently_running_task = ''
     while True:
         logger.debug(f'{features.list_tasks()}')
@@ -31,7 +33,7 @@ def run_task():
         month = datetime.datetime.today().month
         day = datetime.datetime.today().day
         
-        task_file = shelve.open('tasks')
+        # task_file = shelve.open('tasks')
         logger.debug(list(task_file.keys()))
         if task_file.keys() is None:
             logger.debug("There's no task to run. Please create a task.")

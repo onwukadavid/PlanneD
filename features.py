@@ -15,6 +15,7 @@ logger = file_log.get_logger(__name__)
 
 '''TODO: make changes if necessary to the delete_all_task, delete, list, open and close functions with respect
         to the task class if necessary'''
+'''TODO: enable passiing arg to file_decorator.'''
 class Task():
     def __init__(self, task_name):
         '''Initialize the object with a task_name attribute.'''
@@ -93,7 +94,7 @@ def list_tasks(task_file=None):
 '''Delete all tasks.'''
 @file_decorator
 def delete_all_tasks(task_file=None):
-    # task_file = shelve.open('tasks')
+    task_obj_file = shelve.open('tasks')
     logger.info('Deleting all tasks...')
     print('Are you sure you want to delete all tasks?\
           \n(Enter "yes" to proceed, Press any key to cancel operation.)')
@@ -103,7 +104,8 @@ def delete_all_tasks(task_file=None):
         sys.exit('Operation cancelled.')
         
     task_file.clear()
-    # task_file.close()
+    task_obj_file.clear()
+    task_obj_file.close()
     logger.info('All tasks deleted.')
     sys.exit('\nAll tasks deleted.\n')
 
@@ -126,13 +128,14 @@ def close_task(task_processes):
 '''Delete a particular task.'''
 @file_decorator
 def delete_task(task_name, task_file=None):
-    # task_file = shelve.open('tasks')
+    task__obj_file = shelve.open('tasks')
     try:
         task_file.pop(task_name)
+        task__obj_file.pop(task_name)
     except KeyError:
         raise Exception(f'task "{task_name}" does not exist.')
-    # finally:
-    #     task_file.close()
+    finally:
+        task__obj_file.close()
     logger.info(f'task "{task_name}" deleted.')
     list_tasks()
     sys.exit(f'task "{task_name}" deleted.')

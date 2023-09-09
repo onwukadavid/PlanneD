@@ -24,3 +24,4 @@ def split_apps(app_file):
     logger.debug(app_file_match)
     if (app_file_match is None):
         raise ValueError('Please enter a proper application file path.')
+    return app_file_match
