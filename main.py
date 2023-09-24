@@ -58,6 +58,9 @@ def main():
             
             if sys.argv[1] == 'delete':
                 features.delete_all_tasks()
+    except KeyboardInterrupt:
+        print("Operation cancelled.") 
+        logger.error("Operation cancelled.") 
     except Exception as e:
         logger.error(e, exc_info=True)
         print(e)

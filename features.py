@@ -15,15 +15,16 @@ logger = file_log.get_logger(__name__)
 
 '''TODO: make changes if necessary to the delete_all_task, delete, list, open and close functions with respect
         to the task class if necessary'''
-'''TODO: enable passiing arg to file_decorator.'''
+'''TODO: enable passing arg to file_decorator.'''
+'''TODO: Turn task_name into a property, make task_scheduler class a composite of task class'''
 class Task():
     def __init__(self, task_name):
-        '''Initialize the object with a task_name attribute.'''
+        """Initialize the object with a task_name attribute."""
         self.task_name = task_name
 
     @file_decorator
     def save_task(self, start_time_string, end_time_string, apps, task_file=None):
-        '''Saves a new task.'''
+        """Saves a new task."""
         # assert is_correct_time([start_time, end_time]) != False, 'Please enter the proper time format.'
         self.start_time_string = start_time_string
         self.end_time_string = end_time_string
@@ -47,7 +48,7 @@ class Task():
         
     @file_decorator
     def update_task(self, key, task_file=None):
-        '''Update the value of a particular task.'''
+        """Update the value of a particular task."""
         # task_file = shelve.open('tasks')
         logger.info(f'Updating task "{self.task_name}"')
         print(f'Updating task "{self.task_name}"')
@@ -59,8 +60,6 @@ class Task():
             else:
                 time_value = is_correct_time(value.strip())
                 task_update = task_file.get(self.task_name, {})
-                task_update[key] = time_value
-                task_file[self.task_name] = task_update
                 if key == 'start_time':
                     end_time = task_file[self.task_name]['end_time']
                     if time_value > end_time:
@@ -69,19 +68,31 @@ class Task():
                     start_time = task_file[self.task_name]['start_time']
                     if time_value < start_time:
                         raise ValueError('End time must be before start time.')
+                task_update[key] = time_value
+                task_file[self.task_name] = task_update
             task_file.sync()
             logger.info(f'Task "{self.task_name}" updated successfully.')
         except KeyError:
             raise Exception(f"An error occurred while updating task. Please check the spelling of your task name or it's keys.")
         except ValueError as e:
             raise Exception(f'An error occurred while updating task: {e}')
-        # finally:
-        #     task_file.close()
+        
+    def __repr__(self):
+        """Returns a string of an expression that re-creates this object."""
+        return f'{self.__class__.__qualname__}({self.task_name}, {self.start_time_string}, {self.end_time_string}, {self.apps})'
+    
+    def __str__(self):
+        """Returns a human-readable string representation of this object."""
+        return f'Task object: {self.task_name}'
+    
+
+class TaskScheduler():
+    pass
 
 
-'''Lists all the tasks in the database.'''
 @file_decorator
 def list_tasks(task_file=None):
+    """Lists all the tasks in the database."""
     # task_file = shelve.open('tasks')
     if task_file.keys() is None:
         logger.info('No Tasks Found.')
@@ -91,9 +102,9 @@ def list_tasks(task_file=None):
     # task_file.close()
 
 
-'''Delete all tasks.'''
 @file_decorator
 def delete_all_tasks(task_file=None):
+    """Delete all tasks."""
     task_obj_file = shelve.open('tasks')
     logger.info('Deleting all tasks...')
     print('Are you sure you want to delete all tasks?\
@@ -111,6 +122,7 @@ def delete_all_tasks(task_file=None):
 
 
 def open_task(apps):
+    """Open the apps for a specific task"""
     app_process = []
     for app in apps:
         print(f'Opening {app}')
@@ -120,14 +132,15 @@ def open_task(apps):
     
 
 def close_task(task_processes):
+    """Close the apps for a task"""
     for task_process in task_processes:
         # os.kill(task_process, signal.SIGTERM)
         task_process.kill()
     
 
-'''Delete a particular task.'''
 @file_decorator
 def delete_task(task_name, task_file=None):
+    """Delete a particular task."""
     task__obj_file = shelve.open('tasks')
     try:
         task_file.pop(task_name)
