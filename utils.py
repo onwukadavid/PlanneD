@@ -5,11 +5,17 @@ import file_log
 
 logger = file_log.get_logger(__name__)
 
-def file_decorator(func):
-    def wrapper(*args, **kwargs):
-        with shelve.open('tasks_details') as task:
-            func(*args, **kwargs, task_file=task)
-    return wrapper
+def pass_file(_func=None, *, file='tasks_details'):
+    def file_decorator(func):
+        def wrapper(*args, **kwargs): #TODO: IF more than one file was passed
+            with shelve.open(file) as task:
+                func(*args, **kwargs, task_file=task)
+        return wrapper
+    
+    if _func is None:
+        return file_decorator
+    else:
+        return file_decorator(_func)
 
 def is_correct_time(time_string):
     time_regex = re.compile(r'([01]\d|2[0-3]):[0-5]\d')
@@ -25,3 +31,11 @@ def split_apps(app_file):
     if (app_file_match is None):
         raise ValueError('Please enter a proper application file path.')
     return app_file_match
+
+def edit_task_key(dic, old_key, new_key):
+    if new_key in dic.keys():
+        raise KeyError(f'Task name "{new_key}" already exists. Please enter another name.')
+    try:
+        dic[new_key] = dic.pop(old_key)
+    except KeyError:
+        raise KeyError(f'Task name "{old_key}" does not exist') from None

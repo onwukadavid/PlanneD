@@ -6,7 +6,7 @@ import time
 import file_log
 import features
 import sys
-from utils import file_decorator
+from utils import pass_file
 
 
 logger = file_log.get_logger(__name__)
@@ -17,14 +17,14 @@ TODO: rather than going through each task checking the time assign a time to all
 '''
 '''TODO: make changes if necessary to the run_task.py file with respect to the task class if necessary'''
 
-def current_time():
+def get_current_time():
     time_obj = datetime.datetime.now()
     time_str = time_obj.strftime('%H:%M')
     new_time_obj = datetime.datetime.strptime(time_str, '%H:%M')
     logger.debug(f'Current time: {new_time_obj.time()}')
     return new_time_obj.time()
 
-@file_decorator
+@pass_file('task_scheduler') #task_scheduler file store the time of all task
 def run_task(task_file=None):
     currently_running_task = ''
     while True:
@@ -50,13 +50,13 @@ def run_task(task_file=None):
             assert isinstance(start_time, datetime.time), f'start_time must be of datetime obj and not of {type(start_time)}'
             assert isinstance(end_time, datetime.time), f'end_time must be of datetime obj and not of {type(end_time)}'
 
-            if current_time() == five_minutes.time():
+            if get_current_time() == five_minutes.time():
                 print(f'{task_name} begins in 5 minutes. Please save all opened documents.')
                 logger.info(f'{task_name} begins in 5 minutes. Please save all opened documents.')
                 time.sleep(60)
 
-            current_time_obj = current_time()
-            if current_time_obj != start_time:
+            current_time = get_current_time()
+            if current_time != start_time:
                 print('Sleeping...')
                 time.sleep(5)
                 continue

@@ -4,6 +4,7 @@
 USAGE = '''
     Usage:  python main.py save <task_name>           - save a particular tasks to the storage. task_name must be one word.
             python main.py update <task_name> <key>   - update a particular task.
+            python main.py edit                       - edit a particular task name.
             python main.py list                       - list all tasks.
             python main.py delete                     - delete all tasks.
             python main.py delete_task <task_name>    - delete a particular task.
@@ -12,6 +13,7 @@ import sys
 import file_log
 import features
 import shelve
+import utils
 
 logger = file_log.get_logger(__name__)
 
@@ -37,6 +39,8 @@ def main():
 
         if len(sys.argv) == 3:
             if sys.argv[1] == 'save':
+                print('Saving new task...')
+                logger.info('Saving new task...')
                 start_time = input('Enter start time (24hours) e.g 00:00: ')
                 end_time = input('Enter end time (24hours) e.g 00:00: ')
                 apps = input('Enter applications to open: ')
@@ -58,6 +62,21 @@ def main():
             
             if sys.argv[1] == 'delete':
                 features.delete_all_tasks()
+
+            if sys.argv[1] == 'edit':
+                with shelve.open('tasks') as tasks: #tasks file stores task objects
+                    for task_name in tasks.keys():
+                        print(task_name)
+
+                    logger.info('Editing task name...')
+                    old_key = input('Enter task name to edit: ')
+                    task = tasks[task_name] # get task object
+                    new_key = input('Enter new name: ')
+                    utils.edit_task_key(tasks, old_key, new_key)
+                    task.task_name = new_key
+                    task.edit_task_name(old_key, new_key)
+                    print(f'Task name "{old_key}" changed to "{new_key}"')
+                    logger.info(f'Task name "{old_key}" changed to "{new_key}"')
     except KeyboardInterrupt:
         print("Operation cancelled.") 
         logger.error("Operation cancelled.") 
