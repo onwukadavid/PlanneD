@@ -25,6 +25,7 @@ def main():
         if (len(sys.argv) < 2) or (len(sys.argv) > 4):
             sys.exit(USAGE)
 
+        #TODO: work on updatate feature.
         if len(sys.argv) == 4:
             if sys.argv[1] == 'update':
                 '''get task object and update the necessary details.'''
@@ -48,7 +49,7 @@ def main():
                 task = features.Task(task_name)
                 task.save_task(start_time_string=start_time, end_time_string=end_time, apps=apps)
                 with shelve.open('tasks') as tasks:
-                    tasks[task_name] = task
+                    tasks[start_time] = task
                 print('Task saved successfully.')
                 sys.exit()
             
@@ -64,7 +65,7 @@ def main():
                 features.delete_all_tasks()
 
             if sys.argv[1] == 'edit':
-                with shelve.open('tasks') as tasks: #tasks file stores task objects
+                with shelve.open('tasks') as tasks: # tasks file stores task objects
                     for task_name in tasks.keys():
                         print(task_name)
 

@@ -39,3 +39,10 @@ def edit_task_key(dic, old_key, new_key):
         dic[new_key] = dic.pop(old_key)
     except KeyError:
         raise KeyError(f'Task name "{old_key}" does not exist') from None
+    
+def get_current_time():
+    time_obj = datetime.datetime.now()
+    time_str = time_obj.strftime('%H:%M')
+    new_time_obj = datetime.datetime.strptime(time_str, '%H:%M')
+    # logger.debug(f'Current time: {new_time_obj.time()}')
+    return new_time_obj.time()

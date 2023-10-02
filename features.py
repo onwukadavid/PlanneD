@@ -8,6 +8,7 @@ import pprint
 import subprocess
 import re
 import os
+import signal
 from utils import pass_file, is_correct_time, split_apps, edit_task_key
 
 logger = file_log.get_logger(__name__)
@@ -15,8 +16,6 @@ logger = file_log.get_logger(__name__)
 
 '''TODO: make changes if necessary to the delete_all_task, delete, list, open and close functions with respect
         to the task class if necessary'''
-'''TODO: enable passing arg to file_decorator.'''
-'''TODO: Turn task_name into a property, make task_scheduler class a composite of task class'''
 class Task():
     def __init__(self, task_name):
         """Initialize the object with a task_name attribute."""
@@ -115,7 +114,7 @@ class TaskScheduler():
 def list_tasks(task_file=None):
     """Lists all the tasks in the database."""
     # task_file = shelve.open('tasks')
-    if task_file.keys() is None:
+    if not task_file.keys():
         logger.info('No Tasks Found.')
         sys.exit('No Tasks Found.')
     for k, v in task_file.items():
@@ -148,15 +147,14 @@ def open_task(apps):
     for app in apps:
         print(f'Opening {app}')
         task_process = subprocess.Popen(app.strip())
-        app_process.append(task_process)
+        app_process.append(task_process)     
     return app_process
     
 
 def close_task(task_processes):
     """Close the apps for a task"""
     for task_process in task_processes:
-        # os.kill(task_process, signal.SIGTERM)
-        task_process.kill()
+        os.kill(task_process.pid, signal.SIGTERM)
     
 
 @pass_file(file='tasks_details')
