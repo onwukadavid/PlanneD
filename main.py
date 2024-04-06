@@ -11,9 +11,10 @@ USAGE = '''
 '''
 import sys
 import file_log
-import features
 import shelve
 import utils
+from models.task_storage import ShelveStorage
+import models.features as features
 
 logger = file_log.get_logger(__name__)
 
@@ -46,8 +47,9 @@ def main():
                 end_time = input('Enter end time (24hours) e.g 00:00: ')
                 apps = input('Enter applications to open: ')
                 task_name = sys.argv[2].strip()
-                task = features.Task(task_name)
+                task = features.Task(task_name, ShelveStorage())
                 task.save_task(start_time_string=start_time, end_time_string=end_time, apps=apps)
+
                 with shelve.open('tasks') as tasks:
                     tasks[start_time] = task
                 print('Task saved successfully.')
@@ -59,10 +61,12 @@ def main():
         
         if len(sys.argv) == 2:
             if sys.argv[1] == 'list':
-                features.list_tasks()
+                storage= ShelveStorage()
+                storage.list_tasks()
             
             if sys.argv[1] == 'delete':
-                features.delete_all_tasks()
+                storage= ShelveStorage()
+                storage.delete_all_tasks()
 
             if sys.argv[1] == 'edit':
                 with shelve.open('tasks') as tasks: # tasks file stores task objects

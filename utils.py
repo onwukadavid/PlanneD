@@ -28,7 +28,7 @@ def split_apps(app_file):
     app_file_regex = re.compile(r'.+?\.exe')
     app_file_match = re.findall(app_file_regex, app_file)
     logger.debug(app_file_match)
-    if (app_file_match is None):
+    if not app_file_match:
         raise ValueError('Please enter a proper application file path.')
     return app_file_match
 

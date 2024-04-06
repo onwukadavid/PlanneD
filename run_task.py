@@ -4,14 +4,16 @@ import shelve
 import datetime
 import time
 import file_log
-import features
+import models.features as features
 import sys
 import threading
 from utils import pass_file, get_current_time
-from task_notifier import send_notification
+# from task_notifier import send_notification
 
 
 logger = file_log.get_logger(__name__)
+
+'''TODO: Task class shouldn't have any storage since they all share the same storage object'''
 
 '''
 TODO: rather than going through each task checking the time assign a time to all task
@@ -90,7 +92,7 @@ def run_task(task_file=None):
                     Please save all unsaved documents.
                     '''
             
-            send_notification(title=title, message=message)
+            # send_notification(title=title, message=message)
             logger.info('5 minutes notification sent.')
             time.sleep(60*5)
         else:
@@ -114,7 +116,7 @@ def run_task(task_file=None):
                     message = f'''Your task "{next_task}" begins in 5 minutes.\n
                         Please save all unsaved documents.
                         '''
-                    send_notification(title=title, message=message)
+                    # send_notification(title=title, message=message)
                     logger.info('5 minutes notification sent.')
                     # add a sleeper here to avoid wasting resources.
                     # time.sleep(60)
