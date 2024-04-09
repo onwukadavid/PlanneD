@@ -38,7 +38,8 @@ def run_task(task_file=None):
     #TODO: How should newly added task be treated when program is running.
     tasks = sorted(task_file.keys())
     while True:
-        logger.debug(f'{features.list_tasks()}')
+        storage = features.Task.storage
+        logger.debug(f'{storage.list_tasks()}')
         year = datetime.datetime.today().year
         month = datetime.datetime.today().month
         day = datetime.datetime.today().day

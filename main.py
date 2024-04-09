@@ -14,7 +14,8 @@ import file_log
 import shelve
 import utils
 from models.task_storage import ShelveStorage
-import models.features as features
+# import models.features as features
+from models.features import Task
 
 logger = file_log.get_logger(__name__)
 
@@ -26,7 +27,10 @@ def main():
         if (len(sys.argv) < 2) or (len(sys.argv) > 4):
             sys.exit(USAGE)
 
-        #TODO: work on updatate feature.
+
+        Task.storage = ShelveStorage()
+
+        #TODO: REDO Update feature.
         if len(sys.argv) == 4:
             if sys.argv[1] == 'update':
                 '''get task object and update the necessary details.'''
@@ -35,38 +39,39 @@ def main():
                 with shelve.open('tasks') as tasks:
                     task = tasks[task_name]
                 task.update_task(key=key)
-                features.list_tasks()
+                Task.list_tasks()
             print(f'Task "{task_name}" updated successfully.')
             sys.exit()
 
         if len(sys.argv) == 3:
-            if sys.argv[1] == 'save':
+            if sys.argv[1] == 'save': # WORKS AS EXPECTED
                 print('Saving new task...')
                 logger.info('Saving new task...')
                 start_time = input('Enter start time (24hours) e.g 00:00: ')
                 end_time = input('Enter end time (24hours) e.g 00:00: ')
                 apps = input('Enter applications to open: ')
                 task_name = sys.argv[2].strip()
-                task = features.Task(task_name, ShelveStorage())
+
+                task = Task(task_name)
                 task.save_task(start_time_string=start_time, end_time_string=end_time, apps=apps)
 
+                # key should be task object or task name, value should be start time
                 with shelve.open('tasks') as tasks:
                     tasks[start_time] = task
                 print('Task saved successfully.')
                 sys.exit()
             
+            # TODO: Decide if this uses a class method or the task object
             if sys.argv[1] == 'delete_task':
                 task_name = sys.argv[2]
-                features.delete_task(task_name=task_name)
+                Task.delete_task(task_name)
         
         if len(sys.argv) == 2:
-            if sys.argv[1] == 'list':
-                storage= ShelveStorage()
-                storage.list_tasks()
+            if sys.argv[1] == 'list': # WORKS AS EXPECTED
+                Task.list_tasks()
             
-            if sys.argv[1] == 'delete':
-                storage= ShelveStorage()
-                storage.delete_all_tasks()
+            if sys.argv[1] == 'delete': # WORKS AS EXPECTED
+                Task.delete_all_tasks()
 
             if sys.argv[1] == 'edit':
                 with shelve.open('tasks') as tasks: # tasks file stores task objects
@@ -82,6 +87,7 @@ def main():
                     task.edit_task_name(old_key, new_key)
                     print(f'Task name "{old_key}" changed to "{new_key}"')
                     logger.info(f'Task name "{old_key}" changed to "{new_key}"')
+
     except KeyboardInterrupt:
         print("Operation cancelled.") 
         logger.error("Operation cancelled.") 

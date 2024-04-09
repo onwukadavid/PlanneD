@@ -5,12 +5,10 @@ import shelve
 import datetime
 import file_log
 import pprint
-import subprocess
 import re
 import os
-import signal
 from typing import List
-from models.task_storage import TaskStorage
+# from models.task_storage import TaskStorage
 from utils import pass_file, is_correct_time, split_apps, edit_task_key
 
 logger = file_log.get_logger(__name__)
@@ -18,11 +16,12 @@ logger = file_log.get_logger(__name__)
 
 '''TODO: Task class shouldn't have any storage since they all share the same storage object'''
 class Task():
-    def __init__(self, task_name, storage: TaskStorage):
+
+    storage = None
+
+    def __init__(self, task_name):
         """Initialize the object with a task_name attribute."""
         self.task_name: str = task_name
-        self.storage = storage
-        self.manager = TaskManager()
         self.start_time: str = None
         self.end_time: str = None
         self.task_apps: List[str] = None
@@ -43,7 +42,7 @@ class Task():
             
             self.task_apps = split_apps(apps)
 
-            self.storage.save_task(task=self)
+            Task.storage.save_task(task=self)
             
             logger.info(f'Task {self.task_name} saved successfully.')
             print(f'Task {self.task_name} saved successfully.')
@@ -51,6 +50,7 @@ class Task():
                 raise Exception(f'An error occurred while saving task: {e}')
 
 
+    #TODO: REDO Update feature.
     # @pass_file(file='tasks_details')
     def update_task(self, key, task_file=None):
         """Update the value of a particular task."""
@@ -59,7 +59,7 @@ class Task():
         print(f'Updating task "{self.task_name}"')
     
         try:
-            self.storage.update_task(task=self)
+            Task.storage.update_task(task=self)
     #         value = input(f'Enter {key}: ')
     #         if key == 'apps':
     #             app_value = split_apps(value)
@@ -91,68 +91,40 @@ class Task():
         except KeyError as e:
             raise Exception(f'An error occured while updating task name: {e}') from None
         
-    
-    def list_tasks(self): # implemented in task_storage
+
+    # @pass_file(file='tasks_details')
+    @classmethod
+    def delete_task(cls, task_name):
+        """Delete a particular task."""
+
+        cls.storage.delete_task(task_name)
+
+        # task_obj_file = shelve.open('tasks')
+        # try:
+        #     task_file.pop(task_name)
+        #     task_obj_file.pop(task_name)
+        # except KeyError:
+        #     raise Exception(f'task "{task_name}" does not exist.')
+        # finally:
+        #     task_obj_file.close()
+        # logger.info(f'task "{task_name}" deleted.')
+        # self.list_tasks()
+        # sys.exit(f'task "{task_name}" deleted.')
+
+
+    @classmethod
+    def list_tasks(cls): # implemented in task_storage
         """Lists all the tasks in the storage."""
 
-        self.storage.list_task(task=self)
-        # task_file = shelve.open('tasks')
-        # if not task_file.keys():
-        #     logger.info('No Tasks Found.')
-        #     sys.exit('No Tasks Found.')
-        # for k, v in task_file.items():
-        #     pprint.pprint(f'{k}: {v}')
-        # task_file.close()
+        cls.storage.list_tasks()
 
 
-    def delete_all_tasks(self, task_file=None): # implemented in task_storage
+    @classmethod
+    def delete_all_tasks(cls, task_file=None): # implemented in task_storage
         """Delete all tasks."""
-        # task_obj_file = shelve.open('tasks')
-        # logger.info('Deleting all tasks...')
-        # print('Are you sure you want to delete all tasks?\
-        #     \n(Enter "yes" to proceed, Press any key to cancel operation.)')
-        # response = input().lower()
-        # if not response.startswith('y'):
-        #     logger.info('Operation cancelled.')
-        #     sys.exit('Operation cancelled.')
-            
-        # task_file.clear()
-        # task_obj_file.clear()
-        # task_obj_file.close()
-        # logger.info('All tasks deleted.')
-        # sys.exit('\nAll tasks deleted.\n')
 
+        cls.storage.delete_all_tasks()
 
-    def open_task(self, apps):
-        """Open the apps for a specific task"""
-        app_process = []
-        for app in apps:
-            print(f'Opening {app}')
-            task_process = subprocess.Popen(app.strip())
-            app_process.append(task_process)     
-        return app_process
-        
-
-    def close_task(self, task_processes):
-        """Close the apps for a task"""
-        for task_process in task_processes:
-            os.kill(task_process.pid, signal.SIGTERM)
-        
-
-    @pass_file(file='tasks_details')
-    def delete_task(self, task_name, task_file=None):
-        """Delete a particular task."""
-        task_obj_file = shelve.open('tasks')
-        try:
-            task_file.pop(task_name)
-            task_obj_file.pop(task_name)
-        except KeyError:
-            raise Exception(f'task "{task_name}" does not exist.')
-        finally:
-            task_obj_file.close()
-        logger.info(f'task "{task_name}" deleted.')
-        self.list_tasks()
-        sys.exit(f'task "{task_name}" deleted.')
 
     @property
     def task_name(self):
@@ -178,18 +150,23 @@ class Task():
 
        
 
-class TaskManager():
-    def open_task(self, apps):
-        """Open the apps for a specific task"""
-        app_process = []
-        for app in apps:
-            print(f'Opening {app}')
-            task_process = subprocess.Popen(app.strip())
-            app_process.append(task_process)     
-        return app_process
+
+
+
+
+
+
+    # def open_task(self, apps):
+    #     """Open the apps for a specific task"""
+    #     app_process = []
+    #     for app in apps:
+    #         print(f'Opening {app}')
+    #         task_process = subprocess.Popen(app.strip())
+    #         app_process.append(task_process)     
+    #     return app_process
         
 
-    def close_task(self, task_processes):
-        """Close the apps for a task"""
-        for task_process in task_processes:
-            os.kill(task_process.pid, signal.SIGTERM)
+    # def close_task(self, task_processes):
+    #     """Close the apps for a task"""
+    #     for task_process in task_processes:
+    #         os.kill(task_process.pid, signal.SIGTERM)

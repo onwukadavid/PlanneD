@@ -74,6 +74,25 @@ class ShelveStorage(TaskStorage):
         sys.exit('\nAll tasks deleted.\n')
 
 
+    # TODO: Delete from 'tasks' file.
+    @pass_file(file='tasks_details')
+    def delete_task(self, task_name, task_file=None):
+        """Delete a particular task."""
+        # task_obj_file = shelve.open('tasks')
+        try:
+            task_file.pop(task_name)
+            # task_obj_file.pop(task_name)
+        except KeyError:
+            raise Exception(f'task "{task_name}" does not exist.')
+        finally:
+            # task_obj_file.close()
+            ...
+        logger.info(f'task "{task_name}" deleted.')
+        # Task.list_tasks()
+        sys.exit(f'task "{task_name}" deleted.')
+
+
+    #TODO: REDO Update feature.
     @pass_file(file='tasks_details')
     def update_task(self, task, task_file=None):
         """Update the value of a particular task."""
