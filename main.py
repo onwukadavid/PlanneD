@@ -20,8 +20,7 @@ from models.features import Task
 logger = file_log.get_logger(__name__)
 
 #TODO: find out if updating while running or stopped is better. Pick either of them.
-'''TODO: make changes if necessary to the delete_task, delete and list statements with respect
-        to the task class if necessary'''
+'''TODO: WORK ON UPDATE, EDIT and DELETE TASK FEATURE'''
 def main():
     try:
         if (len(sys.argv) < 2) or (len(sys.argv) > 4):
